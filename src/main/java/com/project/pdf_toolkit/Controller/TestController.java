@@ -89,4 +89,17 @@ public class TestController {
             return ResponseEntity.internalServerError().build();
         }
     }
+
+    @PostMapping("/split")
+    public ResponseEntity<byte[]> splitPdf(
+            @RequestParam("file") MultipartFile file,
+            @RequestParam("ranges") String ranges) throws IOException {
+
+        byte[] zipData = pdfService.splitPdfByRanges(file, ranges);
+
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=split.zip")
+                .contentType(MediaType.parseMediaType("application/zip"))
+                .body(zipData);
+    }
 }

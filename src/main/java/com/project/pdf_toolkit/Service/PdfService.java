@@ -15,7 +15,8 @@ import java.io.ByteArrayOutputStream;
 import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.List;
-
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 
 
 @Service
@@ -46,5 +47,43 @@ public class PdfService {
         merger.mergeDocuments(MemoryUsageSetting.setupMainMemoryOnly());
 
         return outputStream.toByteArray();
+    }
+
+    public byte[] splitPdfByRanges(MultipartFile file, String ranges) throws IOException {
+
+        try (PDDocument document = PDDocument.load(file.getInputStream());
+             ByteArrayOutputStream zipBaos = new ByteArrayOutputStream();
+             ZipOutputStream zipOut = new ZipOutputStream(zipBaos)) {
+
+            String[] rangeArray = ranges.split(",");
+
+            int fileIndex = 1;
+
+            for (String range : rangeArray) {
+                String[] parts = range.split("-");
+                int start = Integer.parseInt(parts[0].trim()) - 1; // zero-based
+                int end = Integer.parseInt(parts[1].trim()) - 1;
+
+                PDDocument newDoc = new PDDocument();
+
+                for (int i = start; i <= end; i++) {
+                    newDoc.addPage(document.getPage(i));
+                }
+
+                ByteArrayOutputStream pdfBaos = new ByteArrayOutputStream();
+                newDoc.save(pdfBaos);
+                newDoc.close();
+
+                ZipEntry zipEntry = new ZipEntry("split_" + fileIndex + ".pdf");
+                zipOut.putNextEntry(zipEntry);
+                zipOut.write(pdfBaos.toByteArray());
+                zipOut.closeEntry();
+
+                fileIndex++;
+            }
+
+            zipOut.finish();
+            return zipBaos.toByteArray();
+        }
     }
 }
