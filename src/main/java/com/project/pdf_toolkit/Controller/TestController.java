@@ -1,10 +1,12 @@
 package com.project.pdf_toolkit.Controller;
 
 import com.project.pdf_toolkit.Service.PdfService;
+import jakarta.servlet.http.HttpServletResponse;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.apache.pdfbox.pdmodel.PDDocument;
@@ -90,16 +92,27 @@ public class TestController {
     }
 
     @PostMapping("/split")
-    public ResponseEntity<byte[]> splitPdf(
+    public String splitPdf(
             @RequestParam("file") MultipartFile file,
-            @RequestParam("ranges") String ranges) throws IOException {
+            @RequestParam("ranges") String ranges,
+            Model model,
+            HttpServletResponse response) {
 
-        byte[] zipData = pdfService.splitPdfByRanges(file, ranges);
+        try {
+            byte[] zipData = pdfService.splitPdfByRanges(file, ranges);
 
-        return ResponseEntity.ok()
-                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=split.zip")
-                .contentType(MediaType.parseMediaType("application/zip"))
-                .body(zipData);
+            response.setContentType("application/zip");
+            response.setHeader("Content-Disposition", "attachment; filename=split.zip");
+
+            response.getOutputStream().write(zipData);
+            response.getOutputStream().flush();
+
+            return null; // important
+
+        } catch (Exception e) {
+            model.addAttribute("error", e.getMessage());
+            return "split";
+        }
     }
 
 //    @ExceptionHandler(IllegalArgumentException.class)
