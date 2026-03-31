@@ -1,8 +1,10 @@
 package com.project.pdf_toolkit.Controller;
 
 import com.project.pdf_toolkit.Service.PdfService;
-import org.apache.pdfbox.Loader;
 import org.apache.pdfbox.pdmodel.PDDocument;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -67,5 +69,24 @@ public class TestController {
     @GetMapping("/pdf-test")
     public String pdfTest() {
         return "PDFBox installed successfully";
+    }
+
+    @PostMapping("/merge")
+    public ResponseEntity<byte[]> mergePDFs(
+            @RequestParam("files") MultipartFile[] files) {
+
+        try {
+
+            byte[] merged = pdfService.mergePDFs(files);
+
+            return ResponseEntity.ok()
+                    .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=merged.pdf")
+                    .contentType(MediaType.APPLICATION_PDF)
+                    .body(merged);
+
+        } catch (IOException e) {
+            e.printStackTrace();
+            return ResponseEntity.internalServerError().build();
+        }
     }
 }
