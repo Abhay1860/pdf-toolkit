@@ -102,8 +102,8 @@ public class TestController {
                 .body(zipData);
     }
 
-    @ExceptionHandler(IllegalArgumentException.class)
-    public ResponseEntity<String> handleIllegalArgument(IllegalArgumentException ex) {
-        return ResponseEntity.badRequest().body(ex.getMessage());
-    }
+//    @ExceptionHandler(IllegalArgumentException.class)
+//    public ResponseEntity<String> handleIllegalArgument(IllegalArgumentException ex) {
+//        return ResponseEntity.badRequest().body(ex.getMessage());
+//    }
 }
