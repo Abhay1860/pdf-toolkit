@@ -35,4 +35,9 @@ public class ViewController {
     public String rotatePage() {
         return "rotate";
     }
+
+    @GetMapping("/lock-page")
+    public String lockPage() {
+        return "lock";
+    }
 }

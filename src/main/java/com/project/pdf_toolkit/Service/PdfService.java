@@ -4,6 +4,8 @@ import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.io.MemoryUsageSetting;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDPage;
+import org.apache.pdfbox.pdmodel.encryption.AccessPermission;
+import org.apache.pdfbox.pdmodel.encryption.StandardProtectionPolicy;
 import org.springframework.stereotype.Service;
 
 import java.io.ByteArrayInputStream;
@@ -233,6 +235,33 @@ public class PdfService {
             }
 
             document.save(baos);
+            return baos.toByteArray();
+        }
+    }
+
+    public byte[] lockPdf(MultipartFile file, String password) throws IOException {
+
+        if (file == null || file.isEmpty()) {
+            throw new IllegalArgumentException("File cannot be empty");
+        }
+
+        if (password == null || password.trim().isEmpty()) {
+            throw new IllegalArgumentException("Password cannot be empty");
+        }
+
+        try (PDDocument document = PDDocument.load(file.getInputStream());
+             ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
+
+            AccessPermission ap = new AccessPermission();
+            StandardProtectionPolicy policy =
+                    new StandardProtectionPolicy(password, password, ap);
+
+            policy.setEncryptionKeyLength(128);
+            policy.setPermissions(ap);
+
+            document.protect(policy);
+            document.save(baos);
+
             return baos.toByteArray();
         }
     }

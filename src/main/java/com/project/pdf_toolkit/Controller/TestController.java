@@ -141,6 +141,19 @@ public class TestController {
                 .body(data);
     }
 
+    @PostMapping("/lock")
+    public ResponseEntity<byte[]> lockPdf(
+            @RequestParam("file") MultipartFile file,
+            @RequestParam("password") String password) throws IOException {
+
+        byte[] data = pdfService.lockPdf(file, password);
+
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=locked.pdf")
+                .contentType(MediaType.APPLICATION_PDF)
+                .body(data);
+    }
+
 //    @ExceptionHandler(IllegalArgumentException.class)
 //    public ResponseEntity<String> handleIllegalArgument(IllegalArgumentException ex) {
 //        return ResponseEntity.badRequest().body(ex.getMessage());
