@@ -25,4 +25,14 @@ public class ViewController {
     public String pageCountPage() {
         return "page-count";
     }
+
+    @GetMapping("/reorder-page")
+    public String reorderPage() {
+        return "reorder";
+    }
+
+    @GetMapping("/rotate-page")
+    public String rotatePage() {
+        return "rotate";
+    }
 }

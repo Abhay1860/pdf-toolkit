@@ -115,6 +115,32 @@ public class TestController {
         }
     }
 
+    @PostMapping("/reorder")
+    public ResponseEntity<byte[]> reorderPdf(
+            @RequestParam("file") MultipartFile file,
+            @RequestParam("order") String order) throws IOException {
+
+        byte[] data = pdfService.reorderPdf(file, order);
+
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=reordered.pdf")
+                .contentType(MediaType.APPLICATION_PDF)
+                .body(data);
+    }
+
+    @PostMapping("/rotate")
+    public ResponseEntity<byte[]> rotatePdf(
+            @RequestParam("file") MultipartFile file,
+            @RequestParam("angle") int angle) throws IOException {
+
+        byte[] data = pdfService.rotatePdf(file, angle);
+
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=rotated.pdf")
+                .contentType(MediaType.APPLICATION_PDF)
+                .body(data);
+    }
+
 //    @ExceptionHandler(IllegalArgumentException.class)
 //    public ResponseEntity<String> handleIllegalArgument(IllegalArgumentException ex) {
 //        return ResponseEntity.badRequest().body(ex.getMessage());

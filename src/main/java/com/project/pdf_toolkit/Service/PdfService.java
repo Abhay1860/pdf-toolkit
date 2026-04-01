@@ -3,6 +3,7 @@ package com.project.pdf_toolkit.Service;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.io.MemoryUsageSetting;
 import org.apache.pdfbox.pdmodel.PDDocument;
+import org.apache.pdfbox.pdmodel.PDPage;
 import org.springframework.stereotype.Service;
 
 import java.io.ByteArrayInputStream;
@@ -171,6 +172,68 @@ public class PdfService {
 
             zipOut.finish();
             return zipBaos.toByteArray();
+        }
+    }
+
+    public byte[] reorderPdf(MultipartFile file, String order) throws IOException {
+
+        if (file == null || file.isEmpty()) {
+            throw new IllegalArgumentException("File cannot be empty");
+        }
+
+        if (order == null || order.trim().isEmpty()) {
+            throw new IllegalArgumentException("Order cannot be empty");
+        }
+
+        try (PDDocument document = PDDocument.load(file.getInputStream());
+             PDDocument newDoc = new PDDocument();
+             ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
+
+            int totalPages = document.getNumberOfPages();
+
+            String[] parts = order.split(",");
+
+            for (String part : parts) {
+                int pageNum;
+
+                try {
+                    pageNum = Integer.parseInt(part.trim());
+                } catch (NumberFormatException e) {
+                    throw new IllegalArgumentException("Invalid page number: " + part);
+                }
+
+                if (pageNum < 1 || pageNum > totalPages) {
+                    throw new IllegalArgumentException("Page number out of range: " + pageNum);
+                }
+
+                newDoc.addPage(document.getPage(pageNum - 1));
+            }
+
+            newDoc.save(baos);
+            return baos.toByteArray();
+        }
+    }
+
+    public byte[] rotatePdf(MultipartFile file, int angle) throws IOException {
+
+        if (file == null || file.isEmpty()) {
+            throw new IllegalArgumentException("File cannot be empty");
+        }
+
+        if (angle != 90 && angle != 180 && angle != 270) {
+            throw new IllegalArgumentException("Angle must be 90, 180, or 270");
+        }
+
+        try (PDDocument document = PDDocument.load(file.getInputStream());
+             ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
+
+            for (PDPage page : document.getPages()) {
+                int currentRotation = page.getRotation();
+                page.setRotation((currentRotation + angle) % 360);
+            }
+
+            document.save(baos);
+            return baos.toByteArray();
         }
     }
 }
